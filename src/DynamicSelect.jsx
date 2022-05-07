@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { v4 as uuid } from 'uuid';
+import data from './data';
 
 import { 
   Box,
@@ -17,7 +19,17 @@ const myTypes = {
   TYPE_4: {label:"Type 4", items: [11, 12, 13, 14]},
 };
 
-const TypeSelectMenuItem = (props) => (
+const dropdowns = data
+  .filter(rule => !rule.approval_rules_parent_id)
+  .reduce((acc, item) => {
+  item.childItems = data.filter(child => item.approval_rules_id  === child.approval_rules_parent_id);
+  acc.push(item);
+  return acc;
+}, []);
+
+console.log(dropdowns)
+
+const SelectMenuItem = (props) => (
   <MenuItem {...props}>
     <ListItemText primary={props["data-value"]} />
   </MenuItem>
@@ -38,19 +50,19 @@ export default function DynamicSelect() {
           sx={{ maxWidth: 250 }}
         >
           {Object.keys(myTypes).map((type, index) => (
-            <TypeSelectMenuItem 
+            <SelectMenuItem 
               onClick={(e) => handleClick(e, myTypes[type].items)}
               value={myTypes[type].label} 
-              key={type}
+              key={uuid()}
             >
               {myTypes[type].label}
-            </TypeSelectMenuItem>
+            </SelectMenuItem>
           ))}
         </Select>
         
         {childItems.length > 0 ? (
           <ul>
-            {childItems.map(child => (<li>{child}</li>))}
+            {childItems.map(child => (<li key={uuid()}>{child}</li>))}
           </ul>
         ) : null}
         
