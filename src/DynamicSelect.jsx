@@ -8,16 +8,10 @@ import {
   ListItemText,
   MenuItem,
   FormControl,
+  FormGroup,
   Select,
   Typography
 } from '@mui/material';
-
-const myTypes = {
-  TYPE_1: {label:"Type 1", items: [1, 2, 3]},
-  TYPE_2: {label:"Type 2", items: [4, 5, 6, 7, 8]},
-  TYPE_3: {label:"Type 3", items: [9, 10]},
-  TYPE_4: {label:"Type 4", items: [11, 12, 13, 14]},
-};
 
 const dropdowns = data
   .filter(rule => !rule.approval_rules_parent_id)
@@ -27,8 +21,6 @@ const dropdowns = data
   return acc;
 }, []);
 
-console.log(dropdowns)
-
 const SelectMenuItem = (props) => (
   <MenuItem {...props}>
     <ListItemText primary={props["data-value"]} />
@@ -36,37 +28,59 @@ const SelectMenuItem = (props) => (
 );
 
 export default function DynamicSelect() {
-  const [state, setState] = useState(myTypes.TYPE_1.label);
+  const [dropdownValue, setDropdownValue] = useState(dropdowns[0].name);
   const [childItems, setChildItems] = useState([]);
-  const handleChange = (e) => setState(e.target.value);
-  const handleClick = (e, items) => setChildItems(items);
+  const handleChange = (e) => setDropdownValue(e.target.value);
+  const handleClick = (e, items) => {
+    setChildItems(items);
+    setDropdownValueChildren(items[0].name);
+  }
+
+  const [dropdownValueChildren, setDropdownValueChildren] = useState('');
+  const handleChangeChildren = (e) => {
+    setDropdownValueChildren(e.target.value);
+  }
 
   return (
     <Box>
-      <FormControl>
+      <FormGroup>
         <Select 
-          value={state} 
-          onChange={handleChange} 
-          sx={{ maxWidth: 250 }}
+          value={dropdownValue} 
+          onChange={handleChange}
+          sx={{ width: 'fit-content'}}
         >
-          {Object.keys(myTypes).map((type, index) => (
+          {dropdowns.map(dropdown => (
             <SelectMenuItem 
-              onClick={(e) => handleClick(e, myTypes[type].items)}
-              value={myTypes[type].label} 
+              onClick={(e) => handleClick(e, dropdown.childItems)}
+              value={dropdown.name} 
               key={uuid()}
             >
-              {myTypes[type].label}
+              {dropdown.name}
             </SelectMenuItem>
           ))}
         </Select>
+      </FormGroup>
+
+      {childItems.length > 0 ? (
+        <FormGroup>
+          <Select
+            value={dropdownValueChildren} 
+            onChange={handleChangeChildren}
+            sx={{ width: 'fit-content'}}
+          >
+            {childItems.map((child) => (
+              <MenuItem 
+                onClick={() => console.log('clicked:', child)}
+                value={child.name}
+                key={uuid()}
+              >
+                {child.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormGroup>
+      ) : null}
         
-        {childItems.length > 0 ? (
-          <ul>
-            {childItems.map(child => (<li key={uuid()}>{child}</li>))}
-          </ul>
-        ) : null}
-        
-      </FormControl>
     </Box>
   );
 }
