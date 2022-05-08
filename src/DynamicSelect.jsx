@@ -4,27 +4,23 @@ import data from './data';
 
 import { 
   Box,
-  InputLabel,
-  ListItemText,
   MenuItem,
-  FormControl,
   FormGroup,
   Select
 } from '@mui/material';
 
 const dropdowns = data
   .filter(rule => !rule.approval_rules_parent_id)
-  .reduce((acc, item) => {
+  .map((item) => {
   item.childItems = data.filter(child => item.approval_rules_id  === child.approval_rules_parent_id);
-  acc.push(item);
-  return acc;
-}, []);
+  return item;
+});
 
 export default function DynamicSelect() {
   
   const [dropdownValue, setDropdownValue] = useState(dropdowns[0].name);
   const handleChange = (e) => setDropdownValue(e.target.value);
-  const handleClick = (e, items) => {
+  const handleClick = (items) => {
     setChildItems(items);
     setDropdownValueChildren(items[0].name);
   }
@@ -34,7 +30,7 @@ export default function DynamicSelect() {
   const handleChangeChildren = (e) => {
     setDropdownValueChildren(e.target.value);
   }
-  const handleClickChildren = (e, child) => {
+  const handleClickChildren = (child) => {
     console.log('handleClickChildren:', child);
   }
 
@@ -48,7 +44,7 @@ export default function DynamicSelect() {
         >
           {dropdowns.map(item => (
             <MenuItem 
-              onClick={(e) => handleClick(e, item.childItems)}
+              onClick={() => handleClick(item.childItems)}
               value={item.name} 
               key={uuid()}
             >
@@ -67,7 +63,7 @@ export default function DynamicSelect() {
           >
             {childItems.map((item) => (
               <MenuItem 
-                onClick={(e) => handleClickChildren(e, item)}
+                onClick={() => handleClickChildren(item)}
                 value={item.name}
                 key={uuid()}
               >
