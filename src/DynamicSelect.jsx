@@ -29,25 +29,28 @@ const SelectMenuItem = (props) => (
 
 export default function DynamicSelect() {
   const [dropdownValue, setDropdownValue] = useState(dropdowns[0].name);
-  const [childItems, setChildItems] = useState([]);
   const handleChange = (e) => setDropdownValue(e.target.value);
   const handleClick = (e, items) => {
     setChildItems(items);
     setDropdownValueChildren(items[0].name);
   }
 
+  const [childItems, setChildItems] = useState([]);
   const [dropdownValueChildren, setDropdownValueChildren] = useState('');
   const handleChangeChildren = (e) => {
     setDropdownValueChildren(e.target.value);
   }
+  const handleClickChildren = (e, child) => {
+    console.log('handleClickChildren:', child);
+  }
 
   return (
-    <Box>
+    <Box component="form">
       <FormGroup>
         <Select 
           value={dropdownValue} 
           onChange={handleChange}
-          sx={{ width: 'fit-content'}}
+          sx={{ minWidth: 200}}
         >
           {dropdowns.map(dropdown => (
             <SelectMenuItem 
@@ -66,11 +69,11 @@ export default function DynamicSelect() {
           <Select
             value={dropdownValueChildren} 
             onChange={handleChangeChildren}
-            sx={{ width: 'fit-content'}}
+            sx={{ minWidth: 200, marginTop: 2}}
           >
             {childItems.map((child) => (
               <MenuItem 
-                onClick={() => console.log('clicked:', child)}
+                onClick={(e) => handleClickChildren(e, child)}
                 value={child.name}
                 key={uuid()}
               >
