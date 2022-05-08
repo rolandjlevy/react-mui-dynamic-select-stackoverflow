@@ -13,9 +13,27 @@
 - https://codesandbox.io/s/66943324material-ui-select-component-with-custom-children-item-1k57s?file=/demo.tsx
 
 ```
-        {childItems.length > 0 ? (
-          <ul>
-            {childItems.map((child) => (<li key={uuid()}>{child.name}</li>))}
-          </ul>
-        ) : null}
+
+const SelectMenuItem = (props) => (
+  <MenuItem {...props}>
+    <ListItemText primary={props["data-value"]} />
+  </MenuItem>
+);
+
+{dropdowns.map(dropdown => (
+  <SelectMenuItem 
+    onClick={(e) => handleClick(e, dropdown.childItems)}
+    value={dropdown.name} 
+    key={uuid()}
+  >
+    {dropdown.name}
+  </SelectMenuItem>
+))}
+
+{childItems.length > 0 ? (
+  <ul>
+    {childItems.map((child) => (<li key={uuid()}>{child.name}</li>))}
+  </ul>
+) : null}
+        
 ```

@@ -9,8 +9,7 @@ import {
   MenuItem,
   FormControl,
   FormGroup,
-  Select,
-  Typography
+  Select
 } from '@mui/material';
 
 const dropdowns = data
@@ -21,13 +20,8 @@ const dropdowns = data
   return acc;
 }, []);
 
-const SelectMenuItem = (props) => (
-  <MenuItem {...props}>
-    <ListItemText primary={props["data-value"]} />
-  </MenuItem>
-);
-
 export default function DynamicSelect() {
+  
   const [dropdownValue, setDropdownValue] = useState(dropdowns[0].name);
   const handleChange = (e) => setDropdownValue(e.target.value);
   const handleClick = (e, items) => {
@@ -50,16 +44,16 @@ export default function DynamicSelect() {
         <Select 
           value={dropdownValue} 
           onChange={handleChange}
-          sx={{ minWidth: 200}}
+          sx={{ maxWidth: 250 }}
         >
-          {dropdowns.map(dropdown => (
-            <SelectMenuItem 
-              onClick={(e) => handleClick(e, dropdown.childItems)}
-              value={dropdown.name} 
+          {dropdowns.map(item => (
+            <MenuItem 
+              onClick={(e) => handleClick(e, item.childItems)}
+              value={item.name} 
               key={uuid()}
             >
-              {dropdown.name}
-            </SelectMenuItem>
+              {item.name}
+            </MenuItem>
           ))}
         </Select>
       </FormGroup>
@@ -69,15 +63,15 @@ export default function DynamicSelect() {
           <Select
             value={dropdownValueChildren} 
             onChange={handleChangeChildren}
-            sx={{ minWidth: 200, marginTop: 2}}
+            sx={{ maxWidth: 250, marginTop: 2 }}
           >
-            {childItems.map((child) => (
+            {childItems.map((item) => (
               <MenuItem 
-                onClick={(e) => handleClickChildren(e, child)}
-                value={child.name}
+                onClick={(e) => handleClickChildren(e, item)}
+                value={item.name}
                 key={uuid()}
               >
-                {child.name}
+                {item.name}
               </MenuItem>
             ))}
           </Select>
