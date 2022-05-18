@@ -1,79 +1,113 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import data from './data';
+import flatData from './data';
 
-import { 
-  Box,
-  MenuItem,
-  FormGroup,
-  Select
-} from '@mui/material';
-
-const dropdowns = data
-  .filter(rule => !rule.approval_rules_parent_id)
-  .map((item) => {
-  item.childItems = data.filter(child => item.approval_rules_id  === child.approval_rules_parent_id);
-  return item;
-});
-
-export default function DynamicSelect() {
+// NON CASCADING
+function DynamicSelect() {
+  const [optionsToRender, setOptionsToRender] = useState([]);
+  const getParentOptions = (id, parentsToRender = []) => {
+    const foundElement = flatData.find((item) => item.approval_rules_id === id);
+    //  Check is there is a parent
+    if (foundElement && foundElement.approval_rules_parent_id) {
+      const currentParent = flatData.find(
+        (item) =>
+          item.approval_rules_id === foundElement.approval_rules_parent_id,
+      );
+      const allCurrentParents = flatData.filter(
+        (item) =>
+          item.approval_rules_parent_id ===
+          currentParent.approval_rules_parent_id,
+      );
+      if (allCurrentParents.length) {
+        if (currentParent.approval_rules_parent_id) {
+          parentsToRender.unshift(allCurrentParents);
+        }
+        return getParentOptions(
+          currentParent.approval_rules_parent_id,
+          parentsToRender,
+        );
+      } else {
+        return parentsToRender;
+      }
+    } else {
+      const topLevelOptions = flatData.filter(
+        (item) => !item.approval_rules_parent_id,
+      );
+      parentsToRender.unshift(topLevelOptions);
+      return parentsToRender;
+    }
+  };
+  const getCurrentAndChildOptions = (
+    id,
+    currentAndChildOptionsToRender = [],
+  ) => {
+    const foundElement = flatData.find((item) => item.approval_rules_id === id);
+    // Only push results if the are NOT from the top level
+    if (foundElement.approval_rules_parent_id) {
+      const currentLevelOptions = flatData.filter(
+        (item) =>
+          item.approval_rules_parent_id ===
+          foundElement.approval_rules_parent_id,
+      );
+      currentAndChildOptionsToRender.push(currentLevelOptions);
+    }
+    const doesChildExist = flatData.find(
+      (item) =>
+        item.approval_rules_parent_id === foundElement.approval_rules_id,
+    );
+    if (doesChildExist) {
+      const result = getCurrentAndChildOptions(
+        doesChildExist.approval_rules_id,
+        currentAndChildOptionsToRender,
+      );
+      return result ? result : [];
+    } else {
+      return currentAndChildOptionsToRender;
+    }
+  };
+  const handleChangeOption = (value) => {
+    if (value === 'Select an option') {
+      const initialOptions = flatData.filter(
+        (option) => !option.approval_rules_parent_id,
+      );
+      setOptionsToRender([initialOptions]);
+    } else {
+      const parents = getParentOptions(Number(value));
+      const currentAndChildOptions = getCurrentAndChildOptions(Number(value));
+      setOptionsToRender([...parents, ...currentAndChildOptions]);
+    }
+  };
+  useEffect(() => {
+    const initialOptions = flatData.filter(
+      (option) => !option.approval_rules_parent_id,
+    );
+    setOptionsToRender([initialOptions]);
+  }, []);
   
-  const [dropdownValue, setDropdownValue] = useState(dropdowns[0].name);
-  const handleChange = (e) => setDropdownValue(e.target.value);
-  const handleClick = (items) => {
-    setChildItems(items);
-    setDropdownValueChildren(items[0].name);
-  }
-
-  const [childItems, setChildItems] = useState([]);
-  const [dropdownValueChildren, setDropdownValueChildren] = useState('');
-  const handleChangeChildren = (e) => {
-    setDropdownValueChildren(e.target.value);
-  }
-  const handleClickChildren = (child) => {
-    console.log('handleClickChildren:', child);
-  }
-
   return (
-    <Box component="form">
-      <FormGroup>
-        <Select 
-          value={dropdownValue} 
-          onChange={handleChange}
-          sx={{ maxWidth: 250 }}
-        >
-          {dropdowns.map(item => (
-            <MenuItem 
-              onClick={() => handleClick(item.childItems)}
-              value={item.name} 
-              key={uuid()}
-            >
-              {item.name}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormGroup>
-
-      {childItems.length > 0 ? (
-        <FormGroup>
-          <Select
-            value={dropdownValueChildren} 
-            onChange={handleChangeChildren}
-            sx={{ maxWidth: 250, marginTop: 2 }}
+    <div className='App'>
+      <form className='form-control'>
+        {optionsToRender.map((selectElement, index) => (
+          <select
+            className='input-spacing'
+            key={index + 1}
+            onChange={(event) => handleChangeOption(event.target.value)}
           >
-            {childItems.map((item) => (
-              <MenuItem 
-                onClick={() => handleClickChildren(item)}
-                value={item.name}
-                key={uuid()}
+            {!selectElement[0].approval_rules_parent_id && (
+              <option>Select an option</option>
+            )}
+            {selectElement.map((option) => (
+              <option
+                value={option.approval_rules_id}
+                key={option.approval_rules_id}
               >
-                {item.name}
-              </MenuItem>
+                {option.name}
+              </option>
             ))}
-          </Select>
-        </FormGroup>
-      ) : null}
-        
-    </Box>
+          </select>
+        ))}
+      </form>
+    </div>
   );
 }
+export default DynamicSelect;
